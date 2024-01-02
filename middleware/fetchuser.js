@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "shubhamissmartboy";
 
+// As name suggest the purpose of this middleware is to fetch the user and add to the the request by req.user = data.user;
 fetchUser = async (req, res, next) => {
   try {
     const token = req.header("auth-token");
