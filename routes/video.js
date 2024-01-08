@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const config = require("../config");
 const Video = require("../models/Videos");
+const fetchUser = require("../middleware/fetchuser");
 
 router.post("/addVideo", async (req, res) => {
   const video = await Video.create({
@@ -35,6 +36,26 @@ router.get("/getCourseVideos/:courseId/:indexId", async (req, res) => {
   });
   res.send(video);
 });
+
+router.put("/updateVideo/:id",fetchUser,async (req,res) =>{
+  let updatedVideo = await Video.findByIdAndUpdate(
+    req.params.id,
+    {
+      $set: {
+        name: req.body.name,
+        description: req.body.description,
+        duration: req.body.duration,
+        videoId: req.body.videoId,
+        thumbnail: req.body.thumbnail,
+        courseId: req.body.courseId,
+        index:req.body.index
+      },
+    },
+    { new: true }
+  );
+
+  res.send(updatedVideo);
+})
 
 // router.post("/updateVideo/:id"),
 //   async (req, res) => {
