@@ -57,23 +57,9 @@ router.put("/updateVideo/:id",fetchUser,async (req,res) =>{
   res.send(updatedVideo);
 })
 
-// router.post("/updateVideo/:id"),
-//   async (req, res) => {
-//     try {
-//       console.log("test")
-//       let id = await Video.findById(req.params.id);
-//       if (!id) {
-//         res.status(404).send("Not Found");
-//       }
-//       // video = await Video.findByIdAndUpdate(
-//       //   req.params.id,
-//       //   { $set: { name: "Cancelled",description:"" } },
-//       //   { new: true }
-//       // );
-//       res.status(200).send(video);
-//     } catch (error) {
-//       res.status(400).send("Internal Server Error");
-//     }
-//   };
+router.delete("/deleteVideo/:id",fetchUser,async(req,res)=>{
+  let deletedVideo = await Video.findByIdAndDelete(req.params.id)
+  res.send("Video Deleted")
+})
 
 module.exports = router;
