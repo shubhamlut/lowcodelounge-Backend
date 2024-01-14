@@ -5,7 +5,30 @@ const User = require("../models/Users");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const config = require("../config");
+const fetchUser = require("../middleware/fetchuser");
+const fs = require("fs");
+const { btoa } = require("buffer");
+const multer = require("multer");
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/my-uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+function arrayBufferToString(arrayBuffer) {
+  let byteArray = new Uint16Array(arrayBuffer);
+  let byteString = "";
+  for (let i = 0; i < byteArray.length; i++) {
+    byteString += String.fromCharCode(byteArray[i]);
+  }
+  return byteString;
+}
+
+const upload = multer({ storage: storage });
 //ROUTE #1: Create User
 router.post(
   "/createUser", //endpoint
@@ -45,6 +68,11 @@ router.post(
         password: securedPassword,
         location: req.body.location,
         gender: req.body.gender,
+        picture: {
+          data: "",
+          contentType: "",
+        },
+        mimeType:""
       });
 
       //Generating  JWT Token
@@ -108,8 +136,8 @@ router.post(
       };
       const jwtData = jwt.sign(data, config.secretKey);
       res.status(200).json({
-        userId:user._id,
-        userName:user.name,
+        userId: user._id,
+        userName: user.name,
         success: true,
         jwtToken: jwtData,
       });
@@ -120,5 +148,55 @@ router.post(
     }
   }
 );
+
+//Update user profile picture
+router.put(
+  "/updateProfilePicture",
+  upload.single("uploaded_file"),
+  fetchUser,
+  async function (req, res) {
+    let retrievedPhoto = fs.readFileSync(
+      "./public/my-uploads/" + req.file.originalname
+    );
+
+    let user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        $set: {
+          picture: {
+            data: retrievedPhoto,
+            contentType: req.file.mimetype,
+          },
+          mimeType: req.file.mimetype,
+        },
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Successfully Update the profile picture",
+    });
+  }
+);
+
+//Get user
+
+router.get("/getuser", fetchUser, async (req, res) => {
+  const userId = req.user.id;
+  let user = await User.find({
+    _id: { $in: userId },
+  });
+
+  let userForClient = user.map((user) => {
+    return {
+      name: user.name,
+      email: user.email,
+      profilePicture: btoa(arrayBufferToString(user.picture.data)),
+      mimeType: user.mimeType,
+    };
+  });
+  res.send(userForClient);
+});
 
 module.exports = router;

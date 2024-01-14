@@ -17,6 +17,7 @@ app.use('/api/video',require('./routes/video'))
 app.use('/api/comments',require('./routes/comments'))
 app.use('/api/notes',require('./routes/notes'))
 app.use('/api/blogs',require('./routes/blog'))
+app.use('/api/fileupload',require('./routes/file'))
 
 
 app.listen(config.port, () => {
